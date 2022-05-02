@@ -9,7 +9,7 @@ import com.example.android.pets.data.PetContract.PetEntry;
 public class PetDbHelper extends SQLiteOpenHelper {
     // If you change the database schema, you must increment the database version.
     public static final int DATABASE_VERSION = 1;
-    public static final String DATABASE_NAME = "Shelter.db";
+    public static final String DATABASE_NAME = "shelter.db";
 
     private static final String SQL_DELETE_ENTRIES =
             "DROP TABLE IF EXISTS " + PetEntry.TABLE_NAME;
