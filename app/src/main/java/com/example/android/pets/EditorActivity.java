@@ -18,8 +18,6 @@ package com.example.android.pets;
 import android.content.ContentValues;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.support.v4.app.NavUtils;
-import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -30,6 +28,9 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NavUtils;
+
 import com.example.android.pets.data.PetContract.PetEntry;
 import com.example.android.pets.data.PetDbHelper;
 
@@ -38,16 +39,24 @@ import com.example.android.pets.data.PetDbHelper;
  */
 public class EditorActivity extends AppCompatActivity {
 
-    /** EditText field to enter the pet's name */
+    /**
+     * EditText field to enter the pet's name
+     */
     private EditText mNameEditText;
 
-    /** EditText field to enter the pet's breed */
+    /**
+     * EditText field to enter the pet's breed
+     */
     private EditText mBreedEditText;
 
-    /** EditText field to enter the pet's weight */
+    /**
+     * EditText field to enter the pet's weight
+     */
     private EditText mWeightEditText;
 
-    /** EditText field to enter the pet's gender */
+    /**
+     * EditText field to enter the pet's gender
+     */
     private Spinner mGenderSpinner;
 
     /**
@@ -77,8 +86,9 @@ public class EditorActivity extends AppCompatActivity {
     private void setupSpinner() {
         // Create adapter for spinner. The list options are from the String array it will use
         // the spinner will use the default layout
-        ArrayAdapter genderSpinnerAdapter = ArrayAdapter.createFromResource(this,
-                R.array.array_gender_options, android.R.layout.simple_spinner_item);
+        ArrayAdapter<CharSequence> genderSpinnerAdapter =
+                ArrayAdapter.createFromResource(this, R.array.array_gender_options,
+                        android.R.layout.simple_spinner_item);
 
         // Specify dropdown layout style - simple list view with 1 item per line
         genderSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_dropdown_item_1line);

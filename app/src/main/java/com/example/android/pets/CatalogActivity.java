@@ -20,22 +20,25 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.example.android.pets.data.PetContract.PetEntry;
 import com.example.android.pets.data.PetDbHelper;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 /**
  * Displays list of pets that were entered and stored in the app.
  */
 public class CatalogActivity extends AppCompatActivity {
 
-    /** Database helper that will provide us access to the database */
+    /**
+     * Database helper that will provide us access to the database
+     */
     private PetDbHelper mDbHelper;
 
     @Override
@@ -79,7 +82,7 @@ public class CatalogActivity extends AppCompatActivity {
                 PetEntry.COLUMN_PET_NAME,
                 PetEntry.COLUMN_PET_BREED,
                 PetEntry.COLUMN_PET_GENDER,
-                PetEntry.COLUMN_PET_WEIGHT };
+                PetEntry.COLUMN_PET_WEIGHT};
 
         // Perform a query on the pets table
         Cursor cursor = db.query(
