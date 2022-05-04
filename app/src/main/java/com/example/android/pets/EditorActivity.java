@@ -15,8 +15,11 @@
  */
 package com.example.android.pets;
 
+import android.content.ContentValues;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -24,28 +27,40 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NavUtils;
 
 import com.example.android.pets.data.PetContract.PetEntry;
+import com.example.android.pets.data.PetDbHelper;
 
 /**
  * Allows user to create a new pet or edit an existing one.
  */
 public class EditorActivity extends AppCompatActivity {
 
-    /** EditText field to enter the pet's name */
+    /**
+     * EditText field to enter the pet's name
+     */
     private EditText mNameEditText;
 
-    /** EditText field to enter the pet's breed */
+    /**
+     * EditText field to enter the pet's breed
+     */
     private EditText mBreedEditText;
 
-    /** EditText field to enter the pet's weight */
+    /**
+     * EditText field to enter the pet's weight
+     */
     private EditText mWeightEditText;
 
-    /** EditText field to enter the pet's gender */
+    /**
+     * EditText field to enter the pet's gender
+     */
     private Spinner mGenderSpinner;
+
+    private PetDbHelper mDbHelper;
 
     /**
      * Gender of the pet. The possible values are:
@@ -63,6 +78,10 @@ public class EditorActivity extends AppCompatActivity {
         mBreedEditText = (EditText) findViewById(R.id.edit_pet_breed);
         mWeightEditText = (EditText) findViewById(R.id.edit_pet_weight);
         mGenderSpinner = (Spinner) findViewById(R.id.spinner_gender);
+
+        // To access our database, we instantiate our subclass of SQLiteOpenHelper
+        // and pass the context, which is the current activity.
+        mDbHelper = new PetDbHelper(this);
 
         setupSpinner();
     }
@@ -106,6 +125,37 @@ public class EditorActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Get user input from editor and save new pet into database.
+     */
+    private void insertPet() {
+        // Create and/or open a database to read from it
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(PetEntry.COLUMN_PET_NAME, getStringFromEditText(mNameEditText));
+        values.put(PetEntry.COLUMN_PET_BREED, getStringFromEditText(mBreedEditText));
+        values.put(PetEntry.COLUMN_PET_GENDER, mGender);
+        int weight = Integer.parseInt(getStringFromEditText(mWeightEditText));
+        values.put(PetEntry.COLUMN_PET_WEIGHT, weight);
+        long newRowId = db.insert(PetEntry.TABLE_NAME, null, values);
+
+        String result;
+        if (newRowId == -1) {
+            result = "Error with saving pet";
+        } else {
+            result = "Pet saved with ID: " + newRowId;
+        }
+        Toast.makeText(this, result, Toast.LENGTH_SHORT).show();
+    }
+
+    /**
+     * Get trimmed text from EditText
+     */
+    private String getStringFromEditText(EditText editText) {
+        return editText.getText().toString().trim();
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu options from the res/menu/menu_editor.xml file.
@@ -120,7 +170,10 @@ public class EditorActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             // Respond to a click on the "Save" menu option
             case R.id.action_save:
-                // Do nothing for now
+                // Save pet to database
+                insertPet();
+                // Exit activity
+                finish();
                 return true;
             // Respond to a click on the "Delete" menu option
             case R.id.action_delete:
