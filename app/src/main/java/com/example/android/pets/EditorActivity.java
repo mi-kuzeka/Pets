@@ -17,6 +17,7 @@ package com.example.android.pets;
 
 import android.content.ContentValues;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -129,24 +130,22 @@ public class EditorActivity extends AppCompatActivity {
      * Get user input from editor and save new pet into database.
      */
     private void insertPet() {
-        // Create and/or open a database to read from it
-        SQLiteDatabase db = mDbHelper.getWritableDatabase();
-
         ContentValues values = new ContentValues();
         values.put(PetEntry.COLUMN_PET_NAME, getStringFromEditText(mNameEditText));
         values.put(PetEntry.COLUMN_PET_BREED, getStringFromEditText(mBreedEditText));
         values.put(PetEntry.COLUMN_PET_GENDER, mGender);
         int weight = Integer.parseInt(getStringFromEditText(mWeightEditText));
         values.put(PetEntry.COLUMN_PET_WEIGHT, weight);
-        long newRowId = db.insert(PetEntry.TABLE_NAME, null, values);
 
-        String result;
-        if (newRowId == -1) {
-            result = "Error with saving pet";
-        } else {
-            result = "Pet saved with ID: " + newRowId;
-        }
-        Toast.makeText(this, result, Toast.LENGTH_SHORT).show();
+        Uri newUri = getContentResolver().insert(PetEntry.CONTENT_URI, values);
+
+//        String result;
+//        if (newRowId == -1) {
+//            result = "Error with saving pet";
+//        } else {
+//            result = "Pet saved with ID: " + newRowId;
+//        }
+        Toast.makeText(this, "Pet saved with URI: " + newUri, Toast.LENGTH_SHORT).show();
     }
 
     /**
