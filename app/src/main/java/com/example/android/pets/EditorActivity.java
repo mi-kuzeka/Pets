@@ -130,6 +130,8 @@ public class EditorActivity extends AppCompatActivity {
      * Get user input from editor and save new pet into database.
      */
     private void insertPet() {
+        // Create a ContentValues object where column names are the keys,
+        // and pet attributes from the editor are the values.
         ContentValues values = new ContentValues();
         values.put(PetEntry.COLUMN_PET_NAME, getStringFromEditText(mNameEditText));
         values.put(PetEntry.COLUMN_PET_BREED, getStringFromEditText(mBreedEditText));
@@ -137,15 +139,19 @@ public class EditorActivity extends AppCompatActivity {
         int weight = Integer.parseInt(getStringFromEditText(mWeightEditText));
         values.put(PetEntry.COLUMN_PET_WEIGHT, weight);
 
+        // Insert a new pet row into the provider, returning the content URI for the new pet.
         Uri newUri = getContentResolver().insert(PetEntry.CONTENT_URI, values);
 
-//        String result;
-//        if (newRowId == -1) {
-//            result = "Error with saving pet";
-//        } else {
-//            result = "Pet saved with ID: " + newRowId;
-//        }
-        Toast.makeText(this, "Pet saved with URI: " + newUri, Toast.LENGTH_SHORT).show();
+        // Show a toast message depending on whether or not the insertion was successful.
+        if (newUri == null) {
+            // If the new content URI is null, then there was an error with insertion.
+            Toast.makeText(this, getString(R.string.editor_insert_pet_failed),
+                    Toast.LENGTH_SHORT).show();
+        } else {
+            // Otherwise, the insertion was successful and we can display a toast.
+            Toast.makeText(this, getString(R.string.editor_insert_pet_successful),
+                    Toast.LENGTH_SHORT).show();
+        }
     }
 
     /**

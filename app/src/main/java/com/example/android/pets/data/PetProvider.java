@@ -7,6 +7,7 @@ import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.util.Log;
 
 import com.example.android.pets.data.PetContract.PetEntry;
 
@@ -144,11 +145,24 @@ public class PetProvider extends ContentProvider {
         }
     }
 
+    /**
+     * Insert a pet info into the database with the given content values.
+     *
+     * @return the new content URI for that specific row in the database.
+     */
     private Uri insertPet(Uri uri, ContentValues contentValues) {
         // Get writable database
         SQLiteDatabase database = mDbHelper.getWritableDatabase();
+        // Insert a new pet into the pets database table with the given ContentValues
         long id = database.insert(PetEntry.TABLE_NAME, null, contentValues);
 
+        // If the ID is -1, then the insertion failed. Log an error and return null.
+        if (id == -1) {
+            Log.e(LOG_TAG, "Failed to insert row for " + uri);
+            return null;
+        }
+
+        // Return the new URI with the ID (of the newly inserted row) appended at the end
         return ContentUris.withAppendedId(uri, id);
     }
 
