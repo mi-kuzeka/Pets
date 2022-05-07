@@ -32,7 +32,9 @@ public final class PetContract {
 
     /* Inner class that defines the "pets" table contents */
     public static final class PetEntry implements BaseColumns {
-        /** The content URI to access the pet data in the provider */
+        /**
+         * The content URI to access the pet data in the provider
+         */
         public static final Uri CONTENT_URI = Uri.withAppendedPath(BASE_CONTENT_URI, PATH_PETS);
 
         // Table name
@@ -55,6 +57,16 @@ public final class PetContract {
         public static final int GENDER_UNKNOWN = 0;
         public static final int GENDER_MALE = 1;
         public static final int GENDER_FEMALE = 2;
+
+        /**
+         * Returns whether or not the given gender is {@link #GENDER_UNKNOWN},
+         * {@link #GENDER_MALE}, or {@link #GENDER_FEMALE}.
+         */
+        public static boolean isValidGender(int gender) {
+            return gender == GENDER_UNKNOWN ||
+                    gender == GENDER_MALE ||
+                    gender == GENDER_FEMALE;
+        }
 
         /**
          * Default breed for the pet
