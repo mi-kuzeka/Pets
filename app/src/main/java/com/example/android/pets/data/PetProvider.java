@@ -127,7 +127,15 @@ public class PetProvider extends ContentProvider {
     @Nullable
     @Override
     public String getType(@NonNull Uri uri) {
-        return null;
+        final int match = sUriMatcher.match(uri);
+        switch (match) {
+            case PETS:
+                return PetEntry.CONTENT_LIST_TYPE;
+            case PET_ID:
+                return PetEntry.CONTENT_ITEM_TYPE;
+            default:
+                throw new IllegalStateException("Unknown URI " + uri + " with match " + match);
+        }
     }
 
     /**
@@ -151,20 +159,7 @@ public class PetProvider extends ContentProvider {
      * @return the new content URI for that specific row in the database.
      */
     private Uri insertPet(Uri uri, ContentValues contentValues) {
-        String name = contentValues.getAsString(PetEntry.COLUMN_PET_NAME);
-        if (name == null) {
-            throw new IllegalArgumentException("Pet requires a name.");
-        }
-
-        Integer gender = contentValues.getAsInteger(PetEntry.COLUMN_PET_GENDER);
-        if (!PetEntry.isValidGender(gender)) {
-            throw new IllegalArgumentException("Pet requires valid gender.");
-        }
-
-        Integer weight = contentValues.getAsInteger(PetEntry.COLUMN_PET_WEIGHT);
-        if (weight != null && weight < 0) {
-            throw new IllegalArgumentException("Pet requires valid weight.");
-        }
+        sanityCheck(contentValues);
 
         // Get writable database
         SQLiteDatabase database = mDbHelper.getWritableDatabase();
@@ -185,15 +180,89 @@ public class PetProvider extends ContentProvider {
      * Delete the data at the given selection and selection arguments.
      */
     @Override
-    public int delete(@NonNull Uri uri, @Nullable String s, @Nullable String[] strings) {
-        return 0;
+    public int delete(@NonNull Uri uri, @Nullable String selection,
+                      @Nullable String[] selectionArgs) {
+        // Get writeable database
+        SQLiteDatabase database = mDbHelper.getWritableDatabase();
+
+        final int match = sUriMatcher.match(uri);
+        switch (match) {
+            case PETS:
+                // Delete all rows that match the selection and selection args
+                return database.delete(PetEntry.TABLE_NAME, selection, selectionArgs);
+            case PET_ID:
+                // Delete a single row given by the ID in the URI
+                selection = PetEntry._ID + "=?";
+                selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
+                return database.delete(PetEntry.TABLE_NAME, selection, selectionArgs);
+            default:
+                throw new IllegalArgumentException("Deletion is not supported for " + uri);
+        }
     }
 
     /**
      * Updates the data at the given selection and selection arguments, with the new ContentValues.
      */
     @Override
-    public int update(@NonNull Uri uri, @Nullable ContentValues contentValues, @Nullable String s, @Nullable String[] strings) {
-        return 0;
+    public int update(@NonNull Uri uri, @Nullable ContentValues contentValues,
+                      @Nullable String selection, @Nullable String[] selectionArgs) {
+        // If there are no values to update, then don't try to update the database
+        if (contentValues == null || contentValues.size() == 0) {
+            return 0;
+        }
+        final int match = sUriMatcher.match(uri);
+        switch (match) {
+            case PETS:
+                return updatePet(uri, contentValues, selection, selectionArgs);
+            case PET_ID:
+                selection = PetEntry._ID + "=?";
+                selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
+                return updatePet(uri, contentValues, selection, selectionArgs);
+            default:
+                throw new IllegalArgumentException("Update is not supported for " + uri);
+        }
+    }
+
+    private int updatePet(Uri uri, ContentValues contentValues, String selection,
+                          String[] selectionArgs) {
+        sanityCheck(contentValues);
+
+        // Defines a variable to contain the number of updated rows
+        int rowsUpdated = 0;
+
+        // Get writable database
+        SQLiteDatabase database = mDbHelper.getWritableDatabase();
+        // Update pet in the pets database table with the given ContentValues
+        rowsUpdated = database.update(PetEntry.TABLE_NAME, contentValues,
+                selection, selectionArgs);
+
+        // Return the number of rows that were affected
+        return rowsUpdated;
+    }
+
+    /**
+     * Checks if data is valid. Throws exception if not.
+     */
+    private void sanityCheck(ContentValues contentValues) {
+        if (contentValues.containsKey(PetEntry.COLUMN_PET_NAME)) {
+            String name = contentValues.getAsString(PetEntry.COLUMN_PET_NAME);
+            if (name == null) {
+                throw new IllegalArgumentException("Pet requires a name.");
+            }
+        }
+
+        if (contentValues.containsKey(PetEntry.COLUMN_PET_GENDER)) {
+            Integer gender = contentValues.getAsInteger(PetEntry.COLUMN_PET_GENDER);
+            if (!PetEntry.isValidGender(gender)) {
+                throw new IllegalArgumentException("Pet requires valid gender.");
+            }
+        }
+
+        if (contentValues.containsKey(PetEntry.COLUMN_PET_WEIGHT)) {
+            Integer weight = contentValues.getAsInteger(PetEntry.COLUMN_PET_WEIGHT);
+            if (weight == null || weight <= 0) {
+                throw new IllegalArgumentException("Pet requires valid weight.");
+            }
+        }
     }
 }
