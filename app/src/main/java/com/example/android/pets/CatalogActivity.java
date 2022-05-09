@@ -94,6 +94,12 @@ public class CatalogActivity extends AppCompatActivity {
 
         // Find listView to populate
         ListView lvPets = findViewById(R.id.pets_list);
+
+        //Find and set empty view on the listView,
+        // so that it only shows when the list has 0 items
+        View emptyView = findViewById(R.id.empty_view);
+        lvPets.setEmptyView(emptyView);
+
         // Setup cursor adapter using cursor
         petAdapter = new PetCursorAdapter(this, cursor);
         // Attach cursor adapter to the ListView
