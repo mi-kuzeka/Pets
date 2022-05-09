@@ -15,12 +15,11 @@
  */
 package com.example.android.pets;
 
+import android.app.Activity;
 import android.content.ContentValues;
-import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -177,6 +176,8 @@ public class EditorActivity extends AppCompatActivity {
             case R.id.action_save:
                 // Save pet to database
                 insertPet();
+                // Set activity result OK
+                setResult(Activity.RESULT_OK);
                 // Exit activity
                 finish();
                 return true;
