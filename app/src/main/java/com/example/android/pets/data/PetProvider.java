@@ -204,12 +204,13 @@ public class PetProvider extends ContentProvider {
             default:
                 throw new IllegalArgumentException("Deletion is not supported for " + uri);
         }
-        int result = deletePet(selection, selectionArgs);
+        int rowsDeleted = deletePet(selection, selectionArgs);
 
-        // Notify all listeners that the data has changed for the pet content URI
+        // If 1 or more rows were deleted, then notify all listeners
+        // that the data at the given URI has changed.
         notifyUriChanged(uri);
 
-        return result;
+        return rowsDeleted;
     }
 
     private int deletePet(String selection, String[] selectionArgs) {
@@ -254,8 +255,9 @@ public class PetProvider extends ContentProvider {
         rowsUpdated = database.update(PetEntry.TABLE_NAME, contentValues,
                 selection, selectionArgs);
 
-        // Notify all listeners that the data has changed for the pet content URI
-        notifyUriChanged(uri);
+        // If 1 or more rows were updated, then notify all listeners
+        // that the data at the given URI has changed
+        if (rowsUpdated > 0) notifyUriChanged(uri);
 
         // Return the number of rows that were affected
         return rowsUpdated;
