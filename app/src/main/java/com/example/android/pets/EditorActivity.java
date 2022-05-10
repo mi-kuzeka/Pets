@@ -176,8 +176,6 @@ public class EditorActivity extends AppCompatActivity {
             case R.id.action_save:
                 // Save pet to database
                 insertPet();
-                // Set activity result OK
-                setResult(Activity.RESULT_OK);
                 // Exit activity
                 finish();
                 return true;

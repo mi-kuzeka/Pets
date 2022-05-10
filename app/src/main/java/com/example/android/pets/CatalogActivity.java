@@ -15,7 +15,6 @@
  */
 package com.example.android.pets;
 
-import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
@@ -27,11 +26,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListView;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.loader.app.LoaderManager;
+import androidx.loader.content.CursorLoader;
+import androidx.loader.content.Loader;
 
 import com.example.android.pets.data.PetContract.PetEntry;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -39,9 +39,12 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 /**
  * Displays list of pets that were entered and stored in the app.
  */
-public class CatalogActivity extends AppCompatActivity {
+public class CatalogActivity extends AppCompatActivity
+        implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private PetCursorAdapter petAdapter;
+    private Loader<Cursor> petCursorLoader;
+    public static final int PET_LOADER_ID = 0;
 
     @Override
     protected void onStart() {
@@ -54,43 +57,14 @@ public class CatalogActivity extends AppCompatActivity {
         setContentView(R.layout.activity_catalog);
 
         // Setup FAB to open EditorActivity
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(CatalogActivity.this, EditorActivity.class);
-                mStartForResult.launch(intent);
+                startActivity(intent);
             }
         });
-        displayDatabaseInfo();
-    }
-
-    ActivityResultLauncher<Intent> mStartForResult = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            new ActivityResultCallback<ActivityResult>() {
-                @Override
-                public void onActivityResult(ActivityResult result) {
-                    if (result.getResultCode() == Activity.RESULT_OK) {
-                        displayDatabaseInfo();
-                    }
-                }
-            });
-
-    /**
-     * Temporary helper method to display information in the onscreen TextView about the state of
-     * the pets database.
-     */
-    private void displayDatabaseInfo() {
-        String[] projection = {
-                PetEntry._ID,
-                PetEntry.COLUMN_PET_NAME,
-                PetEntry.COLUMN_PET_BREED
-//                PetEntry.COLUMN_PET_GENDER,
-//                PetEntry.COLUMN_PET_WEIGHT
-        };
-
-        Cursor cursor = getContentResolver().query(PetEntry.CONTENT_URI, projection,
-                null, null, null);
 
         // Find listView to populate
         ListView lvPets = findViewById(R.id.pets_list);
@@ -101,9 +75,13 @@ public class CatalogActivity extends AppCompatActivity {
         lvPets.setEmptyView(emptyView);
 
         // Setup cursor adapter using cursor
-        petAdapter = new PetCursorAdapter(this, cursor);
+        petAdapter = new PetCursorAdapter(this, null);
         // Attach cursor adapter to the ListView
         lvPets.setAdapter(petAdapter);
+
+        // Initialize new loader
+        petCursorLoader = LoaderManager.getInstance(this)
+                .initLoader(PET_LOADER_ID, null, this);
     }
 
     /**
@@ -136,7 +114,6 @@ public class CatalogActivity extends AppCompatActivity {
             // Respond to a click on the "Insert dummy data" menu option
             case R.id.action_insert_dummy_data:
                 insertPet();
-                displayDatabaseInfo();
                 // Do nothing for now
                 return true;
             // Respond to a click on the "Delete all entries" menu option
@@ -145,5 +122,41 @@ public class CatalogActivity extends AppCompatActivity {
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @NonNull
+    @Override
+    public Loader<Cursor> onCreateLoader(int loaderId, @Nullable Bundle args) {
+        if (loaderId == PET_LOADER_ID) {
+            String[] projection = {
+                    PetEntry._ID,
+                    PetEntry.COLUMN_PET_NAME,
+                    PetEntry.COLUMN_PET_BREED
+            };
+            // Returns a new cursor loader
+            return new CursorLoader(
+                    this,
+                    PetEntry.CONTENT_URI,
+                    projection,
+                    null,
+                    null,
+                    null
+            );
+        }
+        // An invalid id was passed on
+        return null;
+    }
+
+    @Override
+    public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor data) {
+        // Moves the query results into the adapter, causing the
+        // ListView fronting this adapter to re-display
+        petAdapter.swapCursor(data);
+    }
+
+    @Override
+    public void onLoaderReset(@NonNull Loader<Cursor> loader) {
+        // Clears out the adapter's reference to the Cursor.
+        petAdapter.swapCursor(null);
     }
 }
