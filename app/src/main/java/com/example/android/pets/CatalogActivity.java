@@ -42,7 +42,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 public class CatalogActivity extends AppCompatActivity
         implements LoaderManager.LoaderCallbacks<Cursor> {
 
-    private PetCursorAdapter petAdapter;
+    private PetCursorAdapter petCursorAdapter;
     private Loader<Cursor> petCursorLoader;
     public static final int PET_LOADER_ID = 0;
 
@@ -75,9 +75,9 @@ public class CatalogActivity extends AppCompatActivity
         lvPets.setEmptyView(emptyView);
 
         // Setup cursor adapter using cursor
-        petAdapter = new PetCursorAdapter(this, null);
+        petCursorAdapter = new PetCursorAdapter(this, null);
         // Attach cursor adapter to the ListView
-        lvPets.setAdapter(petAdapter);
+        lvPets.setAdapter(petCursorAdapter);
 
         // Initialize new loader
         petCursorLoader = LoaderManager.getInstance(this)
@@ -151,12 +151,12 @@ public class CatalogActivity extends AppCompatActivity
     public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor data) {
         // Moves the query results into the adapter, causing the
         // ListView fronting this adapter to re-display
-        petAdapter.swapCursor(data);
+        petCursorAdapter.swapCursor(data);
     }
 
     @Override
     public void onLoaderReset(@NonNull Loader<Cursor> loader) {
         // Clears out the adapter's reference to the Cursor.
-        petAdapter.swapCursor(null);
+        petCursorAdapter.swapCursor(null);
     }
 }
