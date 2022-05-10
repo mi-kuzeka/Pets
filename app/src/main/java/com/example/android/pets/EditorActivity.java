@@ -15,8 +15,8 @@
  */
 package com.example.android.pets;
 
-import android.app.Activity;
 import android.content.ContentValues;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -29,16 +29,21 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NavUtils;
+import androidx.loader.app.LoaderManager;
+import androidx.loader.content.CursorLoader;
+import androidx.loader.content.Loader;
 
 import com.example.android.pets.data.PetContract.PetEntry;
-import com.example.android.pets.data.PetDbHelper;
 
 /**
  * Allows user to create a new pet or edit an existing one.
  */
-public class EditorActivity extends AppCompatActivity {
+public class EditorActivity extends AppCompatActivity
+        implements LoaderManager.LoaderCallbacks<Cursor> {
 
     /**
      * EditText field to enter the pet's name
@@ -60,7 +65,13 @@ public class EditorActivity extends AppCompatActivity {
      */
     private Spinner mGenderSpinner;
 
-    private PetDbHelper mDbHelper;
+    /**
+     * Identifier for the pet data loader
+     */
+    private static final int EXISTING_PET_LOADER = 0;
+
+    private Uri currentPetUri;
+
 
     /**
      * Gender of the pet. The possible values are:
@@ -73,15 +84,25 @@ public class EditorActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_editor);
 
-        // Find all relevant views that we will need to read user input from
-        mNameEditText = (EditText) findViewById(R.id.edit_pet_name);
-        mBreedEditText = (EditText) findViewById(R.id.edit_pet_breed);
-        mWeightEditText = (EditText) findViewById(R.id.edit_pet_weight);
-        mGenderSpinner = (Spinner) findViewById(R.id.spinner_gender);
+        currentPetUri = getIntent().getData();
+        boolean isNewPet = (currentPetUri == null);
 
-        // To access our database, we instantiate our subclass of SQLiteOpenHelper
-        // and pass the context, which is the current activity.
-        mDbHelper = new PetDbHelper(this);
+        if (isNewPet) {
+            this.setTitle(R.string.editor_activity_title_new_pet);
+        } else {
+            this.setTitle(R.string.editor_activity_title_edit_pet);
+        }
+
+        // Find all relevant views that we will need to read user input from
+        mNameEditText = findViewById(R.id.edit_pet_name);
+        mBreedEditText = findViewById(R.id.edit_pet_breed);
+        mWeightEditText = findViewById(R.id.edit_pet_weight);
+        mGenderSpinner = findViewById(R.id.spinner_gender);
+
+        if (!isNewPet) {
+            LoaderManager.getInstance(this)
+                    .initLoader(EXISTING_PET_LOADER, null, this);
+        }
 
         setupSpinner();
     }
@@ -190,5 +211,61 @@ public class EditorActivity extends AppCompatActivity {
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @NonNull
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, @Nullable Bundle args) {
+        if (id == EXISTING_PET_LOADER) {
+            String[] projection = {
+                    PetEntry._ID,
+                    PetEntry.COLUMN_PET_NAME,
+                    PetEntry.COLUMN_PET_BREED,
+                    PetEntry.COLUMN_PET_GENDER,
+                    PetEntry.COLUMN_PET_WEIGHT
+            };
+            return new CursorLoader(
+                    this,
+                    currentPetUri,
+                    projection,
+                    null,
+                    null,
+                    null
+            );
+        }
+        return null;
+    }
+
+    @Override
+    public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor data) {
+        // Bail early if the cursor is null or there is less than 1 row in the cursor
+        if (data == null || data.getCount() < 1) {
+            return;
+        }
+        if (data.moveToFirst()) {
+            // Extract properties from cursor
+            String petName = data.getString(
+                    data.getColumnIndexOrThrow(PetEntry.COLUMN_PET_NAME));
+            String petBreed = data.getString(
+                    data.getColumnIndexOrThrow(PetEntry.COLUMN_PET_BREED));
+            int petWeight = data.getInt(
+                    data.getColumnIndexOrThrow(PetEntry.COLUMN_PET_WEIGHT));
+            int petGender = data.getInt(
+                    data.getColumnIndexOrThrow(PetEntry.COLUMN_PET_GENDER));
+            // Populate fields with extracted properties
+            mNameEditText.setText(petName);
+            mBreedEditText.setText(petBreed);
+            mWeightEditText.setText(Integer.toString(petWeight));
+            mGenderSpinner.setSelection(petGender);
+        }
+    }
+
+    @Override
+    public void onLoaderReset(@NonNull Loader<Cursor> loader) {
+        // Clear all fields
+        mNameEditText.setText("");
+        mBreedEditText.setText("");
+        mWeightEditText.setText("");
+        mGenderSpinner.setSelection(0);
     }
 }

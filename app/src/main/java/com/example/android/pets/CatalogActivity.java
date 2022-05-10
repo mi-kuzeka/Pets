@@ -15,6 +15,7 @@
  */
 package com.example.android.pets;
 
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
@@ -43,8 +44,7 @@ public class CatalogActivity extends AppCompatActivity
         implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private PetCursorAdapter petCursorAdapter;
-    private Loader<Cursor> petCursorLoader;
-    public static final int PET_LOADER_ID = 0;
+    public static final int PETS_LOADER_ID = 0;
 
     @Override
     protected void onStart() {
@@ -58,30 +58,35 @@ public class CatalogActivity extends AppCompatActivity
 
         // Setup FAB to open EditorActivity
         FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(CatalogActivity.this, EditorActivity.class);
-                startActivity(intent);
-            }
+        fab.setOnClickListener(view -> {
+            Intent intent = new Intent(CatalogActivity.this, EditorActivity.class);
+            startActivity(intent);
         });
 
         // Find listView to populate
-        ListView lvPets = findViewById(R.id.pets_list);
+        ListView petsListView = findViewById(R.id.pets_list);
 
         //Find and set empty view on the listView,
         // so that it only shows when the list has 0 items
         View emptyView = findViewById(R.id.empty_view);
-        lvPets.setEmptyView(emptyView);
+        petsListView.setEmptyView(emptyView);
 
         // Setup cursor adapter using cursor
         petCursorAdapter = new PetCursorAdapter(this, null);
         // Attach cursor adapter to the ListView
-        lvPets.setAdapter(petCursorAdapter);
+        petsListView.setAdapter(petCursorAdapter);
+
+        petsListView.setOnItemClickListener((adapterView, itemView, position, itemId) -> {
+            Intent intent = new Intent(CatalogActivity.this, EditorActivity.class);
+
+            Uri currentPetUri = ContentUris.withAppendedId(PetEntry.CONTENT_URI, itemId);
+            intent.setData(currentPetUri);
+
+            startActivity(intent);
+        });
 
         // Initialize new loader
-        petCursorLoader = LoaderManager.getInstance(this)
-                .initLoader(PET_LOADER_ID, null, this);
+        LoaderManager.getInstance(this).initLoader(PETS_LOADER_ID, null, this);
     }
 
     /**
@@ -127,7 +132,7 @@ public class CatalogActivity extends AppCompatActivity
     @NonNull
     @Override
     public Loader<Cursor> onCreateLoader(int loaderId, @Nullable Bundle args) {
-        if (loaderId == PET_LOADER_ID) {
+        if (loaderId == PETS_LOADER_ID) {
             String[] projection = {
                     PetEntry._ID,
                     PetEntry.COLUMN_PET_NAME,
