@@ -169,17 +169,17 @@ public class EditorActivity extends AppCompatActivity
         });
     }
 
-    // Check if user changed any value in the fields
-    private boolean petHasChanged() {
-        boolean petNameHasChanged =
-                !mPetName.equals(getStringFromEditText(mNameEditText, ""));
-        boolean petBreedHasChanged =
-                !mPetBreed.equals(getStringFromEditText(mBreedEditText, PetEntry.BREED_DEFAULT));
-        boolean petGenderHasChanged = (mPetGender != mGender);
-        boolean petWeightHasChanged =
-                (mPetWeight != getIntFromEditText(mWeightEditText, PetEntry.WEIGHT_DEFAULT));
-        return petNameHasChanged || petBreedHasChanged ||
-                petGenderHasChanged || petWeightHasChanged;
+    // Check if user has not changed any value in the fields
+    private boolean petHasNotChanged() {
+        boolean petNameHasNotChanged =
+                mPetName.equals(getStringFromEditText(mNameEditText, ""));
+        boolean petBreedHasNotChanged =
+                mPetBreed.equals(getStringFromEditText(mBreedEditText, PetEntry.BREED_DEFAULT));
+        boolean petGenderHasNotChanged = (mPetGender == mGender);
+        boolean petWeightHasNotChanged =
+                (mPetWeight == getIntFromEditText(mWeightEditText, PetEntry.WEIGHT_DEFAULT));
+        return petNameHasNotChanged && petBreedHasNotChanged &&
+                petGenderHasNotChanged && petWeightHasNotChanged;
     }
 
     /**
@@ -257,6 +257,11 @@ public class EditorActivity extends AppCompatActivity
         // Inflate the menu options from the res/menu/menu_editor.xml file.
         // This adds menu items to the app bar.
         getMenuInflater().inflate(R.menu.menu_editor, menu);
+        // If this is a new pet, hide the "Delete" menu item;
+        if (mIsNewPet) {
+            MenuItem menuItem = menu.findItem(R.id.action_delete);
+            menuItem.setVisible(false);
+        }
         return true;
     }
 
@@ -280,7 +285,7 @@ public class EditorActivity extends AppCompatActivity
             case android.R.id.home:
                 // If the pet hasn't changed, continue with navigating up to parent activity
                 // which is the {@link CatalogActivity}.
-                if (!petHasChanged()) {
+                if (petHasNotChanged()) {
                     NavUtils.navigateUpFromSameTask(EditorActivity.this);
                     return true;
                 }
@@ -381,7 +386,7 @@ public class EditorActivity extends AppCompatActivity
 
     @Override
     public void onBackPressed() {
-        if (!petHasChanged()) {
+        if (petHasNotChanged()) {
             super.onBackPressed();
             return;
         }
