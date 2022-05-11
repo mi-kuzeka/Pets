@@ -172,9 +172,9 @@ public class EditorActivity extends AppCompatActivity
     // Check if user has not changed any value in the fields
     private boolean petHasNotChanged() {
         boolean petNameHasNotChanged =
-                mPetName.equals(getStringFromEditText(mNameEditText, ""));
+                mPetName.equals(getStringFromEditText(mNameEditText));
         boolean petBreedHasNotChanged =
-                mPetBreed.equals(getStringFromEditText(mBreedEditText, PetEntry.BREED_DEFAULT));
+                mPetBreed.equals(getStringFromEditText(mBreedEditText));
         boolean petGenderHasNotChanged = (mPetGender == mGender);
         boolean petWeightHasNotChanged =
                 (mPetWeight == getIntFromEditText(mWeightEditText, PetEntry.WEIGHT_DEFAULT));
@@ -195,9 +195,9 @@ public class EditorActivity extends AppCompatActivity
         // and pet attributes from the editor are the values.
         ContentValues values = new ContentValues();
         values.put(PetEntry.COLUMN_PET_NAME,
-                getStringFromEditText(mNameEditText, ""));
+                getStringFromEditText(mNameEditText));
         values.put(PetEntry.COLUMN_PET_BREED,
-                getStringFromEditText(mBreedEditText, PetEntry.BREED_DEFAULT));
+                getStringFromEditText(mBreedEditText));
         values.put(PetEntry.COLUMN_PET_GENDER, mGender);
         values.put(PetEntry.COLUMN_PET_WEIGHT,
                 getIntFromEditText(mWeightEditText, PetEntry.WEIGHT_DEFAULT));
@@ -237,17 +237,15 @@ public class EditorActivity extends AppCompatActivity
     /**
      * Get trimmed text from EditText
      */
-    private String getStringFromEditText(EditText editText, String defaultText) {
-        String resultText = editText.getText().toString().trim();
-        if (TextUtils.isEmpty(resultText)) return defaultText;
-        return resultText;
+    private String getStringFromEditText(EditText editText) {
+        return editText.getText().toString().trim();
     }
 
     /**
      * Get integer from EditText
      */
     private int getIntFromEditText(EditText editText, int defaultValue) {
-        String resultText = editText.getText().toString().trim();
+        String resultText = getStringFromEditText(editText);
         if (TextUtils.isEmpty(resultText)) return defaultValue;
         return Integer.parseInt(resultText);
     }
