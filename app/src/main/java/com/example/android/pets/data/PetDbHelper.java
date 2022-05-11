@@ -24,11 +24,9 @@ public class PetDbHelper extends SQLiteOpenHelper {
                 "CREATE TABLE " + PetEntry.TABLE_NAME + " ("
                         + PetEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                         + PetEntry.COLUMN_PET_NAME + " TEXT NOT NULL, "
-                        + PetEntry.COLUMN_PET_BREED + " TEXT NOT NULL DEFAULT \""
-                        + PetEntry.BREED_DEFAULT + "\", "
+                        + PetEntry.COLUMN_PET_BREED + " TEXT NOT NULL, "
                         + PetEntry.COLUMN_PET_GENDER + " INTEGER NOT NULL, "
-                        + PetEntry.COLUMN_PET_WEIGHT + " INTEGER NOT NULL DEFAULT "
-                        + PetEntry.WEIGHT_DEFAULT + ");";
+                        + PetEntry.COLUMN_PET_WEIGHT + " INTEGER NOT NULL);";
 
         sqLiteDatabase.execSQL(SQL_CREATE_ENTRIES);
     }

@@ -150,15 +150,22 @@ public class EditorActivity extends AppCompatActivity
     /**
      * Get user input from editor and save pet into database.
      */
-    private void savePet() {
+    private boolean savePet() {
+        if (dataIsInvalid()) {
+            showToast("Fill the name of pet");
+            return false;
+        }
+
         // Create a ContentValues object where column names are the keys,
         // and pet attributes from the editor are the values.
         ContentValues values = new ContentValues();
-        values.put(PetEntry.COLUMN_PET_NAME, getStringFromEditText(mNameEditText));
-        values.put(PetEntry.COLUMN_PET_BREED, getStringFromEditText(mBreedEditText));
+        values.put(PetEntry.COLUMN_PET_NAME,
+                getStringFromEditText(mNameEditText, ""));
+        values.put(PetEntry.COLUMN_PET_BREED,
+                getStringFromEditText(mBreedEditText, PetEntry.BREED_DEFAULT));
         values.put(PetEntry.COLUMN_PET_GENDER, mGender);
-        int weight = Integer.parseInt(getStringFromEditText(mWeightEditText));
-        values.put(PetEntry.COLUMN_PET_WEIGHT, weight);
+        values.put(PetEntry.COLUMN_PET_WEIGHT,
+                getIntFromEditText(mWeightEditText, PetEntry.WEIGHT_DEFAULT));
 
         String toastMessage;
         if (isNewPet) {
@@ -179,14 +186,35 @@ public class EditorActivity extends AppCompatActivity
                     getString(R.string.editor_update_pet_successful);
         }
 
-        Toast.makeText(this, toastMessage, Toast.LENGTH_SHORT).show();
+        showToast(toastMessage);
+        return true;
+    }
+
+    private void showToast(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+
+    private boolean dataIsInvalid() {
+        String nameText = mNameEditText.getText().toString().trim();
+        return TextUtils.isEmpty(nameText);
     }
 
     /**
      * Get trimmed text from EditText
      */
-    private String getStringFromEditText(EditText editText) {
-        return editText.getText().toString().trim();
+    private String getStringFromEditText(EditText editText, String defaultText) {
+        String resultText = editText.getText().toString().trim();
+        if (TextUtils.isEmpty(resultText)) return defaultText;
+        return resultText;
+    }
+
+    /**
+     * Get integer from EditText
+     */
+    private int getIntFromEditText(EditText editText, int defaultValue) {
+        String resultText = editText.getText().toString().trim();
+        if (TextUtils.isEmpty(resultText)) return defaultValue;
+        return Integer.parseInt(resultText);
     }
 
     @Override
@@ -204,9 +232,10 @@ public class EditorActivity extends AppCompatActivity
             // Respond to a click on the "Save" menu option
             case R.id.action_save:
                 // Save pet to database
-                savePet();
-                // Exit activity
-                finish();
+                if (savePet()) {
+                    // Exit activity
+                    finish();
+                }
                 return true;
             // Respond to a click on the "Delete" menu option
             case R.id.action_delete:
@@ -263,7 +292,7 @@ public class EditorActivity extends AppCompatActivity
             // Populate fields with extracted properties
             mNameEditText.setText(petName);
             mBreedEditText.setText(petBreed);
-            mWeightEditText.setText(Integer.toString(petWeight));
+            mWeightEditText.setText(String.valueOf(petWeight));
             mGenderSpinner.setSelection(petGender);
         }
     }
