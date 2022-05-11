@@ -55,7 +55,7 @@ public class EditorActivity extends AppCompatActivity
     /**
      * Pet's name value from database for editing mode
      */
-    private String mPetName;
+    private String mPetName = "";
 
     /**
      * EditText field to enter the pet's breed
@@ -65,7 +65,7 @@ public class EditorActivity extends AppCompatActivity
     /**
      * Pet's breed value from database for editing mode
      */
-    private String mPetBreed;
+    private String mPetBreed = "";
 
     /**
      * EditText field to enter the pet's weight
@@ -75,7 +75,7 @@ public class EditorActivity extends AppCompatActivity
     /**
      * Pet's weight value from database for editing mode
      */
-    private int mPetWeight;
+    private int mPetWeight = 0;
 
     /**
      * EditText field to enter the pet's gender
@@ -85,7 +85,7 @@ public class EditorActivity extends AppCompatActivity
     /**
      * Pet's gender value from database for editing mode
      */
-    private int mPetGender;
+    private int mPetGender = 0;
 
     /**
      * Identifier for the pet data loader
