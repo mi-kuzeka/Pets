@@ -212,9 +212,9 @@ public class EditorActivity extends AppCompatActivity
                     // Toast message when new pet has been successfully inserted
                     getString(R.string.editor_insert_pet_successful);
         } else {
-            int newRowId = getContentResolver().update(mCurrentPetUri, values,
+            int rowsUpdated = getContentResolver().update(mCurrentPetUri, values,
                     null, null);
-            toastMessage = (newRowId == 0) ?
+            toastMessage = (rowsUpdated == 0) ?
                     // Toast message when current pet has failed to be updated
                     getString(R.string.editor_update_pet_failed) :
                     // Toast message when current pet was successfully updated
@@ -279,7 +279,9 @@ public class EditorActivity extends AppCompatActivity
                 return true;
             // Respond to a click on the "Delete" menu option
             case R.id.action_delete:
-                // Do nothing for now
+                if (!mIsNewPet)
+                    // Pop up confirmation dialog for deletion
+                    showDeleteConfirmationDialog();
                 return true;
             // Respond to a click on the "Up" arrow button in the app bar
             case android.R.id.home:
@@ -398,5 +400,41 @@ public class EditorActivity extends AppCompatActivity
                 };
 
         showUnsavedChangesDialog(discardButtonClickListener);
+    }
+
+    private void showDeleteConfirmationDialog() {
+        // Create an AlertDialog.Builder and set the message, and click listeners
+        // for the positive and negative buttons on the dialog.
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.delete_dialog_msg);
+        builder.setPositiveButton(R.string.delete, (dialog, id) -> {
+            // User clicked the "Delete" button, so delete the pet.
+            deletePet();
+        });
+        builder.setNegativeButton(R.string.cancel, (dialog, id) -> {
+            // User clicked the "Cancel" button, so dismiss the dialog
+            // and continue editing the pet.
+            if (dialog != null) {
+                dialog.dismiss();
+            }
+        });
+
+        // Create and show the AlertDialog
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
+    /**
+     * Perform the deletion of the pet in the database.
+     */
+    private void deletePet() {
+        int rowsDeleted = getContentResolver()
+                .delete(mCurrentPetUri, null, null);
+        if (rowsDeleted > 0) {
+            showToast(getString(R.string.editor_delete_pet_successful));
+            finish();
+        } else {
+            showToast(getString(R.string.editor_delete_pet_failed));
+        }
     }
 }
