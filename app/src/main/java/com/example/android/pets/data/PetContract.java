@@ -82,11 +82,6 @@ public final class PetContract {
         }
 
         /**
-         * Default breed for the pet
-         */
-        public static final String BREED_DEFAULT = "Unknown breed";
-
-        /**
          * Default weight for the pet
          */
         public static final int WEIGHT_DEFAULT = 0;

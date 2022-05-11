@@ -59,17 +59,20 @@ public class PetCursorAdapter extends CursorAdapter {
         // Find fields to populate in inflated template
         TextView tvPetName = view.findViewById(R.id.pet_name);
         TextView tvPetSummary = view.findViewById(R.id.pet_summary);
+
         // Extract properties from cursor
         String petName = cursor.getString(
                 cursor.getColumnIndexOrThrow(PetEntry.COLUMN_PET_NAME));
-        String petSummary = cursor.getString(
+        String petBreed = cursor.getString(
                 cursor.getColumnIndexOrThrow(PetEntry.COLUMN_PET_BREED));
+        if (TextUtils.isEmpty(petBreed)) {
+            // If the pet breed is empty string or null, then use some default text
+            // that says "Unknown breed", so the TextView isn't blank
+            petBreed = context.getString(R.string.unknown_breed);
+        }
+
         // Populate fields with extracted properties
         tvPetName.setText(petName);
-        if (TextUtils.isEmpty(petSummary)) {
-            tvPetSummary.setText(PetEntry.BREED_DEFAULT);
-        } else {
-            tvPetSummary.setText(petSummary);
-        }
+        tvPetSummary.setText(petBreed);
     }
 }
