@@ -26,9 +26,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.CursorLoader;
@@ -119,11 +121,10 @@ public class CatalogActivity extends AppCompatActivity
             // Respond to a click on the "Insert dummy data" menu option
             case R.id.action_insert_dummy_data:
                 insertPet();
-                // Do nothing for now
                 return true;
             // Respond to a click on the "Delete all entries" menu option
             case R.id.action_delete_all_entries:
-                // Do nothing for now
+                showDeletePetsConfirmationDialog();
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -163,5 +164,40 @@ public class CatalogActivity extends AppCompatActivity
     public void onLoaderReset(@NonNull Loader<Cursor> loader) {
         // Clears out the adapter's reference to the Cursor.
         petCursorAdapter.swapCursor(null);
+    }
+
+    private void showDeletePetsConfirmationDialog() {
+        // Create an AlertDialog.Builder and set the message, and click listeners
+        // for the positive and negative buttons on the dialog.
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.delete_all_pets_dialog_msg);
+        builder.setPositiveButton(R.string.delete, (dialog, id) -> {
+            // User clicked the "Delete" button, so delete pets.
+            deleteAllPets();
+        });
+        builder.setNegativeButton(R.string.cancel, (dialog, id) -> {
+            // User clicked the "Cancel" button, so dismiss the dialog.
+            if (dialog != null) {
+                dialog.dismiss();
+            }
+        });
+
+        // Create and show the AlertDialog
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
+    private void deleteAllPets() {
+        int rowsDeleted = getContentResolver()
+                .delete(PetEntry.CONTENT_URI, null, null);
+        if (rowsDeleted > 0) {
+            showToast(getString(R.string.editor_delete_all_pets_successful));
+        } else {
+            showToast(getString(R.string.editor_delete_all_pets_failed));
+        }
+    }
+
+    private void showToast(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 }
